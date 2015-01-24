@@ -1,5 +1,36 @@
-# Jekyll::StaticComments
+# Mulle kybernetiK's Jekyll::StaticComments
 
+This is pretty much a rewrite of the original code Jekyll::StaticComments. Here's some text what's diferent, and then the rest is the original README.md.
+
+### What's so different ?
+
+*	It depends now on the presence of a `tidy` excutable, which will transform any given input into a valid XHTML body.
+
+*	This XHTML body is then censored by SafeHTML to remove all HTML tags, that one would consider unpleasant or even dangerous.
+
+*	The resultant sanitized file is then handed over to a shell script, so that the comment can be mailed out or committed to git.
+
+### Quick Start 
+
+Create a fresh jekyll site with . Then extract the repository files over it:
+
+<pre>jekyll new mysite
+cd mysite 
+git archive --remote http://www.mulle-kybernetik.com/repositories/mulle-jekyll-static-comments HEAD | tar -xf -
+jekyll serve</pre>
+
+Now you should see another post in the list of posts.
+
+
+### I am getting a lot of spam now
+
+Check out mulle-captchaed-jekyll-static-comments. 
+
+
+
+
+# Jekyll::StaticComments
+ 
 Whilst most people go for a Disqus account, or some similar JS-abusing means
 of putting comments on their blog, I'm old-fashioned, and like my site to be
 dead-tree useable.  Hence this plugin: it provides a means of associating

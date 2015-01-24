@@ -44,9 +44,20 @@ module StaticComments
 		
 		Dir["#{source}/**/_comments/**/*"].sort.each do |comment|
 			next unless File.file?(comment) and File.readable?(comment)
-			yaml_data = YAML::load_file(comment)
-			post_id = yaml_data.delete('post_id')
-			comments[post_id] << yaml_data
+
+                        file    = File.open( comment, "rb")
+                        content = file.read
+                        file.close
+
+                        if content =~ /^(---\s*\n.*?\n?)^(---\s*$\n?)/m
+                            yaml_data             = YAML.load( $1)
+                            yaml_data[ 'content'] = $POSTMATCH
+
+    			    post_id = yaml_data.delete('post_id')
+			    comments[ post_id] << yaml_data
+			else
+        		    $stderr.write 'unusable comment: '+ comment		
+			end
 		end
 		
 		comments
