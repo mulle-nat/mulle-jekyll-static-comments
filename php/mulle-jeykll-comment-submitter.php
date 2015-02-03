@@ -193,6 +193,8 @@ class MulleJekyllCommentSubmitter
    //
    function   acquire_comment_filename( $post_id)
    {
+      $name=basename( $post_id);
+
       $dir=date( $this->comment_subdir);
       if( ! is_dir($dir))
          mkdir( $dir, 0777, true);  // this raises if fails
@@ -201,7 +203,7 @@ class MulleJekyllCommentSubmitter
       $max=128;
       do
       { 
-         $filename = "$dir" . "/" . "$post_id" . "_" . substr( uniqid( rand(), true), 0, 5) . "." . "$this->comment_extension";
+         $filename = "$dir" . "/" . "$name" . "_" . substr( uniqid( rand(), true), 0, 5) . "." . "$this->comment_extension";
          if ( ! file_exists( $filename))
             break;
          
