@@ -51,6 +51,7 @@ class MulleJekyllCommentSubmitter
 
    public $submit_script        = NULL ;  //  __DIR__ . "/submit-mail.sh";
    public $submit_in_background = false;
+   public $debug                = false;
 
    function   log( $output)
    {
@@ -96,7 +97,8 @@ class MulleJekyllCommentSubmitter
    
    function   compose_yaml( $post)
    {
-      $this->logKeyValue( "_POST[]", $post);
+      if( $this->debug)
+         $this->logKeyValue( "_POST[]", $post);
 
       if( $post === NULL)
          throw new Exception( 'post cant be NULL');
@@ -130,7 +132,7 @@ class MulleJekyllCommentSubmitter
             // It's easier just to single-quote everything than to try and work
             // out what might need quoting
             $value = "'" . str_replace("'", "''", $value) . "'";
-            $msg .= "$key: $value\n";
+            $msg  .= "$key: $value\n";
          }
          else
          {
@@ -145,17 +147,26 @@ class MulleJekyllCommentSubmitter
    public function   tidy_html_content( $comment)
    {
       //
-      // first run it through tidy to make the HTML proper
-      //
-      $escaped_comment=escapeshellcmd( "$comment");
-      if( $escaped_comment === "")
-         throw new Exception('Escape did it rrrong');
+      // first run in through tidy to make the HTML proper
+      // markdown should hopefully pass through
+      // shell escaping ruins UTF8 so use a tmp file
       
       if( ! is_executable( "/usr/bin/tidy"))
          throw new Exception('Tidy is missing');
 
-      echo exec( "echo '$escaped_comment' | /usr/bin/tidy -raw -q -b -c -u -asxhtml --enclose-block-text yes --drop-proprietary-attributes yes --hide-comments yes --show-warnings no --show-body-only yes", $tidied, $rval);
+      if( $this->debug)
+         $this->log("untidied: ". $comment);
+      
+      $tmpfname = tempnam("/tmp", "tidy");
+      if( $tmpfname == false)
+         throw new Exception( 'Can\'t generate tmp file');
+      
+      file_put_contents( $tmpfname, $comment);
+      
+      exec( "/usr/bin/tidy -raw -q -b -c -u -asxhtml --enclose-block-text yes --drop-proprietary-attributes yes --hide-comments yes --show-warnings no --show-body-only yes " . $tmpfname, $tidied, $rval);
 
+      unlink( $tmpfname);
+      
       if( $rval > 1)
       {
          error_log( "tidy objected to :" .  $comment);
@@ -165,6 +176,9 @@ class MulleJekyllCommentSubmitter
       $comment="";
       foreach( $tidied as $line)
          $comment="$comment" . "$line";
+
+      if( $this->debug)
+         $this->log("tidied: ". $comment);
       
       return $comment;
    }
@@ -195,20 +209,22 @@ class MulleJekyllCommentSubmitter
    function   acquire_comment_filename( $post_id)
    {
       $name=basename( $post_id);
-
+      
       $dir="";
       if( strlen( $this->comment_subdir) !== 0)
       {
-      $dir=date( $this->comment_subdir);
-      if( ! is_dir($dir))
-         mkdir( $dir, 0777, true);  // this raises if fails
+         $dir=date( $this->comment_subdir);
+         if( ! is_dir( $dir))
+            mkdir( $dir, 0777, true);  // this raises if fails
       }
       
       $n=0;
       $max=128;
+      $prefix=strlen( $dir) ? "$dir" . "/" : "";
+      
       do
-      { 
-         $filename = "$dir" . "/" . "$name" . "_" . substr( uniqid( rand(), true), 0, 5) . "." . "$this->comment_extension";
+      {
+         $filename =  "$prefix" . "$name" . "_" . substr( uniqid( rand(), true), 0, 5) . "." . "$this->comment_extension";
          if ( ! file_exists( $filename))
             break;
          
@@ -236,8 +252,7 @@ class MulleJekyllCommentSubmitter
 
       $filename = $this->acquire_comment_filename( $yaml[ "post_id"]);
       file_put_contents( $filename, "---\n" . $yaml[ "header"] . "---\n" . $yaml[ "body"] . "\n");
-
-      $this->logKeyValue( "file", $filename);
+      $this->log( "file: " . $filename);
    
       return $filename;   
    }
