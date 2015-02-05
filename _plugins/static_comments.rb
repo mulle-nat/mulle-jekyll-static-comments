@@ -33,12 +33,17 @@ module StaticComments
 	# Find all the comments for a post
 	def self.find_for_post(post)
 		@comments ||= read_comments(post.site.source)
-		@comments[post.id]
+		@comments[ post.id]
 	end
 	
 	# Read all the comments files in the site, and return them as a hash of
 	# arrays containing the comments, where the key to the array is the value
 	# of the 'post_id' field in the YAML data in the comments files.
+        #
+        # Are we doing this for every freakin post ?
+        # It is my deep suspicion, that this WAY WAY WAY slowing things down
+        # when jekyll is publishing
+        #
 	def self.read_comments(source)
 		comments = Hash.new() { |h, k| h[k] = Array.new }
 		
@@ -50,13 +55,15 @@ module StaticComments
                         file.close
 
                         if content =~ /^(---\s*\n.*?\n?)^(---\s*$\n?)/m
-                            yaml_data             = YAML.load( $1)
-                            yaml_data[ 'content'] = $POSTMATCH
+                            yaml_data                = YAML.load( $1)
+                            yaml_data[ 'content']    = $POSTMATCH
+                            yaml_data[ 'comment_id'] = File.basename( comment, File.extname(comment))
 
     			    post_id = yaml_data.delete('post_id')
 			    comments[ post_id] << yaml_data
+                            comments[ post_id].sort_by! { |item| item[ 'date'] }
 			else
-        		    $stderr.write 'unusable comment: '+ comment		
+			    $stderr.write 'unusable comment: '+ comment
 			end
 		end
 		
