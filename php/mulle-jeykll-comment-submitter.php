@@ -31,6 +31,7 @@ class MulleJekyllCommentSubmitter
    
    // subdirectory structure to place the comment (as a date format)
    // default will be like 2015/file.yaml
+   // category sadly unvailable
    public $comment_subdir    = "Y";
 
    // what post fields from the form to store into the yaml header of the comment
@@ -195,9 +196,13 @@ class MulleJekyllCommentSubmitter
    {
       $name=basename( $post_id);
 
+      $dir="";
+      if( strlen( $this->comment_subdir) !== 0)
+      {
       $dir=date( $this->comment_subdir);
       if( ! is_dir($dir))
          mkdir( $dir, 0777, true);  // this raises if fails
+      }
       
       $n=0;
       $max=128;
