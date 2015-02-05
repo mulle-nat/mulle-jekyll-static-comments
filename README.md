@@ -10,6 +10,11 @@ This is pretty much a rewrite of the original code Jekyll::StaticComments. Here'
 
 *	The resultant sanitized file is then handed over to a shell script, so that the comment can be mailed out or committed to git.
 
+*	The comments are sorted by the 'date' field. 
+
+*	The comment	can be stored in the body of the file. The old code stored it in the YAML header.
+
+
 ### Quick Start 
 
 Create a fresh jekyll site with . Then extract the repository files over it:
