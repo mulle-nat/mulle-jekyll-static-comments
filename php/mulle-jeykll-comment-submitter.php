@@ -33,19 +33,21 @@ class MulleJekyllCommentSubmitter
    // default will be like 2015/file.yaml
    // category sadly unvailable
    public $comment_subdir    = "Y";
+   public $comment_infix     = "_";
 
    // what post fields from the form to store into the yaml header of the comment
    // "comment" is a given as the comments body
    public $comment_keys          = array( "email", "name"); 
-   public $comment_required_keys = array("name"); 
-
+   public $comment_required_keys = array( "name");
+  
    // default file extension for comment file
    public $comment_extension = "yaml";
    
    // Format of the date you want to use in your comments.  See
    // http://php.net/manual/en/function.date.php for the insane details of this
-   // format.
-   public $comment_date_format = "d-m-Y H:i";
+   // format. (Isn't this supposed to be ISO 8601) ?
+   // public $comment_date_format = "Y-m-d\TH:i:sP";
+   public $comment_date_format = "Y-m-d H:i:s";
 
    public $log_file             = NULL;
 
@@ -112,8 +114,12 @@ class MulleJekyllCommentSubmitter
       $msg  = "post_id: $post_id\n";
       $msg .= "date: " . date( $this->comment_date_format) . "\n";
       
-      $comment=$post[ "comment"];
-
+      $comment = $post[ "comment"];
+      
+      // if we don't find <p or <br, then assume it's newline formatted
+      if( preg_match( '/<p|<br/i', $comment) != 1)
+         $comment = nl2br( $comment, false);
+         
       //
       // extract only known keys
       //
@@ -131,7 +137,8 @@ class MulleJekyllCommentSubmitter
             
             // It's easier just to single-quote everything than to try and work
             // out what might need quoting
-            $value = "'" . str_replace("'", "''", $value) . "'";
+            $value = htmlentities( $value);
+            $value = "'" . str_replace( "'", "''", $value) . "'";
             $msg  .= "$key: $value\n";
          }
          else
@@ -163,7 +170,7 @@ class MulleJekyllCommentSubmitter
       
       file_put_contents( $tmpfname, $comment);
       
-      exec( "/usr/bin/tidy -raw -q -b -c -u -asxhtml --enclose-block-text yes --drop-proprietary-attributes yes --hide-comments yes --show-warnings no --show-body-only yes " . $tmpfname, $tidied, $rval);
+      exec( "/usr/bin/tidy -utf8 -q -b -u -asxhtml --enclose-block-text yes --drop-proprietary-attributes yes --hide-comments yes --show-warnings no --show-body-only yes " . $tmpfname, $tidied, $rval);
 
       unlink( $tmpfname);
       
@@ -198,7 +205,6 @@ class MulleJekyllCommentSubmitter
            error_log( $error);
          throw new Exception('U did it rrong');
       }
-      return $comment;
    }
   
    //
@@ -224,7 +230,7 @@ class MulleJekyllCommentSubmitter
       
       do
       {
-         $filename =  "$prefix" . "$name" . "_" . substr( uniqid( rand(), true), 0, 5) . "." . "$this->comment_extension";
+         $filename =  "$prefix" . "$name" . "$this->comment_infix" . substr( uniqid( rand(), true), 0, 5) . "." . "$this->comment_extension";
          if ( ! file_exists( $filename))
             break;
          
@@ -248,7 +254,7 @@ class MulleJekyllCommentSubmitter
       if( $yaml[ "body"] === "")
          throw new Exception('U did it rrrong.');
       
-      $yaml[ "body"] = $this->ensure_safe_html_content( $yaml[ "body"]);
+      $this->ensure_safe_html_content( $yaml[ "body"]);
 
       $filename = $this->acquire_comment_filename( $yaml[ "post_id"]);
       file_put_contents( $filename, "---\n" . $yaml[ "header"] . "---\n" . $yaml[ "body"] . "\n");
