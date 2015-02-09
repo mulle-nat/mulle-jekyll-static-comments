@@ -59,9 +59,13 @@ module StaticComments
                             yaml_data[ 'content']    = $POSTMATCH
                             yaml_data[ 'comment_id'] = File.basename( comment, File.extname(comment))
 
-                            yaml_data[ 'name'].force_encoding("UTF-8")
-                            yaml_data[ 'content'].force_encoding("UTF-8")
-                            
+			    if yaml_data[ 'name'].respond_to?(:force_encoding)
+                               yaml_data[ 'name'].force_encoding("UTF-8")
+                            end
+			    if yaml_data[ 'content'].respond_to?(:force_encoding)
+	                       yaml_data[ 'content'].force_encoding("UTF-8")
+           		    end      
+           
     			    post_id = yaml_data.delete('post_id')
 			    comments[ post_id] << yaml_data
                             comments[ post_id].sort_by! { |item| item[ 'date'] }
