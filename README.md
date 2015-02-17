@@ -4,7 +4,7 @@ This is pretty much a rewrite of the original code Jekyll::StaticComments. Here'
 
 ### What's so different ?
 
-*	It depends now on the presence of a `tidy` excutable, which will transform any given input into a valid XHTML body.
+*	It depends now on the presence of a [`tidy`](http://sourceforge.net/projects/tidy/) excutable, which will transform any given input into a valid XHTML body.
 
 *	This XHTML body is then censored by SafeHTML to remove all HTML tags, that one would consider unpleasant or even dangerous.
 
@@ -12,7 +12,7 @@ This is pretty much a rewrite of the original code Jekyll::StaticComments. Here'
 
 *	The comments are sorted by the 'date' field. 
 
-*	The comment	can be stored in the body of the file. The old code stored it in the YAML header.
+*	The comment can be stored in the body of the file. The old code stored it in the YAML header.
 
 
 ### Quick Start 
@@ -24,7 +24,11 @@ cd mysite
 git archive --remote http://www.mulle-kybernetik.com/repositories/mulle-jekyll-static-comments HEAD | tar -xf -
 jekyll serve</pre>
 
-Now you should see another post in the list of posts.
+Now you should see another post in the list of posts. When using the submission feature in your own code, you need to edit the following files to your liking:
+
+* ``php/commentsubmit.php``
+* ``php/submit-mail.sh``
+* ``php/submit-git.sh``
 
 
 ### I am getting a lot of spam now
