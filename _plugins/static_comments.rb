@@ -40,9 +40,7 @@ module StaticComments
 	# arrays containing the comments, where the key to the array is the value
 	# of the 'post_id' field in the YAML data in the comments files.
         #
-        # Are we doing this for every freakin post ?
-        # It is my deep suspicion, that this WAY WAY WAY slowing things down
-        # when jekyll is publishing
+	# this is apparently only once on each publish run
         #
 	def self.read_comments(source)
 		comments = Hash.new() { |h, k| h[k] = Array.new }

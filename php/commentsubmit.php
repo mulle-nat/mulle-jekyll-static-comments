@@ -22,7 +22,7 @@ require_once __DIR__ . '/' . 'mulle-jekyll-comment-submitter.php';
 /* test it with  
 
     curl -v -d 'post_id=123456&info=223232&comment=harhar' \
-    http://127.0.0.1/~nat/mulle-jekyll-static-comments/php/mullecommentsubmit.php
+    http://127.0.0.1/~nat/mulle-jekyll-static-comments/php/commentsubmit.php
 */
 $committer = new MulleJekyllCommentSubmitter();
 $commiter->submit_script = __DIR__ . '/submit-mail.sh';
